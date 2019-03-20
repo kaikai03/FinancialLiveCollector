@@ -1,0 +1,1 @@
+scan live shortNews from sina|cnfol|wallstreet;
