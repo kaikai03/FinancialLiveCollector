@@ -300,7 +300,7 @@ if __name__ == '__main__':
         # 从昨天开始
         cnfolCollectorProcess(getPreviousDate(time.strftime('%Y-%m-%d', time.localtime(time.time()))))
 
-        print('end')
+        print('end!')
 
 
 
