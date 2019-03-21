@@ -3,6 +3,10 @@ __author__ = 'kai_k_000'
 
 # nohup python -u main.py sina > ./log.txt 2>&1 &
 # nohup python -u main.py ws > ./log.txt 2>&1 &
+# nohup python -u main.py zj > ./log.txt 2>&1 &
+
+# python  main.py sina test 1001
+# nohup python -u main.py sina older 1001 > ./log.txt 2>&1 &
 
 _SINA_SAMPLE__ = "http://zhibo.sina.com.cn/api/zhibo/feed?callback=jQuery111206309269858793495_1552133471689&" \
             "page=1&page_size=20&zhibo_id=152&tag_id=0&dire=f&dpc=1&pagesize=20&_=1552133471709"
@@ -133,11 +137,16 @@ def sinaCollectorProcess(startPage=1):
             if status == record.insertStatus.Success:
                 insertCusumError=0
 
-        if insertCusumError == 20 and  len(sys.argv)<=2:
+        if insertCusumError >= 39:  # 往前追溯时，碰到连续两页无新内容时，说明更新完毕
             raise someError("insertCusumError")
-        if sys.argv[2] == 'test' and len(sys.argv) == 3:
-            if insertCusumError >= 10:
-                raise someError("test error:  insertCusumError:", insertCusumError, "page:", page)
+
+        if len(sys.argv) >= 3:  # 测试选项时，仅试试当前页面是否已全部获取。不保存
+            if sys.argv[2] == 'test':
+                if insertCusumError < 20:
+                    raise someError("test error: exist NEW  Cusum" + str(insertCusumError) + "page:" + str(page))
+                else:
+                    raise someError("test past: ALL existed  Cusum" + str(insertCusumError) + "page:" + str(page))
+
         page += 1
 
         time.sleep(interval)
@@ -211,7 +220,7 @@ def wallstreetCollectorProcess(startTime=1552490575):
             insertCusumError +=1
             if status == record.insertStatus.Success:
                 insertCusumError=0
-        if insertCusumError == 20:
+        if insertCusumError >= 25:
             raise someError("insertCusumError")
         cursor = nextCursor
 
@@ -268,7 +277,7 @@ def cnfolCollectorProcess(startDateCursor='2018-03-01'):
             insertCusumError +=1
             if status == record.insertStatus.Success:
                 insertCusumError=0
-        if insertCusumError == 20:
+        if insertCusumError >= 25:
             raise someError("insertCusumError")
         if cursor == '2018-03-01':
             raise someError("last date have data,had get all msg")
@@ -282,9 +291,17 @@ if __name__ == '__main__':
 
     if sys.argv[1] == 'sina':
         print('start sinaCollectorProcess')
-        if os.path.isfile('./lockPage_sina'):
-            raise someError("check lockPage_sina file, it cant be exist")
-        sinaCollectorProcess(1)
+        if len(sys.argv) >= 3:
+            if sys.argv[2] == 'test':  # 测试选项，第4选项为起始页
+                sinaCollectorProcess(int(sys.argv[3]))
+            elif sys.argv[2] == 'older':  # 在旧的基础上往前追溯
+                if os.path.isfile('./lockPage_sina'):
+                    raise someError("check lockPage_sina file, it cant be exist")
+                sinaCollectorProcess(int(sys.argv[3]))
+        else:
+            if os.path.isfile('./lockPage_sina'):
+                raise someError("check lockPage_sina file, it cant be exist")
+            sinaCollectorProcess(1)
 
     if sys.argv[1] == 'ws':
         print('ws')
@@ -300,7 +317,4 @@ if __name__ == '__main__':
         # 从昨天开始
         cnfolCollectorProcess(getPreviousDate(time.strftime('%Y-%m-%d', time.localtime(time.time()))))
 
-        print('end!')
-
-
-
+        print('end')
