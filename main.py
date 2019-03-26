@@ -110,7 +110,11 @@ def sinaMessageRequest(net, rf, page):
             row['tag_name2'] = msg['tag'][1]['name']
         rows.append(row)
 
-    return rf.addARows(rows)
+    istest = False
+    if len(sys.argv) >= 3:
+        if sys.argv[2] == 'test':
+            istest = True
+    return rf.addARows(rows, istest)
 
 
 def sinaCollectorProcess(startPage=1):
@@ -139,7 +143,7 @@ def sinaCollectorProcess(startPage=1):
 
         if insertCusumError >= 39:  # 往前追溯时，碰到连续两页无新内容时，说明更新完毕
             raise someError("insertCusumError")
-
+            
         if len(sys.argv) >= 3:  # 测试选项时，仅试试当前页面是否已全部获取。不保存
             if sys.argv[2] == 'test':
                 if insertCusumError < 20:

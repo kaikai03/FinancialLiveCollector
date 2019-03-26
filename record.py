@@ -67,7 +67,7 @@ class recordfile:
         return csv.DictWriter(file, fieldnames=header)
 
 
-    def addARows(self, items):
+    def addARows(self, items, istest=False):
         if  0 == len(items) or type(items)!=list:
             return [insertStatus.SomeError]
 
@@ -79,11 +79,13 @@ class recordfile:
                 res.append(insertStatus.Exist)
                 continue
 
-            with open(self.filePath, 'a+') as file:
-                csvWriter = self.__loadCSVWriter(file, self.header)
-                csvWriter.writerow(item)
-                self.hashIndex_dic[hashIndex]  = 1 #str(item[self.header[1]]) + item[self.header[2]]
-                res.append(insertStatus.Success)
+            if istest == False:
+                with open(self.filePath, 'a+') as file:
+                    csvWriter = self.__loadCSVWriter(file, self.header)
+                    csvWriter.writerow(item)
+
+            self.hashIndex_dic[hashIndex]  = 1 #str(item[self.header[1]]) + item[self.header[2]]
+            res.append(insertStatus.Success)
         return res
 
 
