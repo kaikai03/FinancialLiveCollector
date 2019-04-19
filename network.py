@@ -9,6 +9,7 @@ retryTime = __RETRY_TIME__
 
 import requests
 import json
+import time
 # import httplib
 # httplib.HTTPConnection._http_vsn = 10
 # httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
@@ -89,9 +90,11 @@ class net:
                     continue
                 break
             except Exception as e:
-                print("getResponseData error", e.message)
+                print("getResponseData error")
                 print("retry %d time" % i)
                 if i == __RETRY_TIME__:
+                    print("error quit")
                     return None
+                time.sleep(240)
                 continue
         return response.text
